@@ -17,6 +17,21 @@ GROUP BY c.customer_id, c.name, c.region
 ORDER BY Total_spent DESC
 LIMIT 5;
 
+-- products with their total number of orders and total quantity sold
+SELECT 
+	p.product_id,
+	p.name,
+	COUNT(DISTINCT oi.order_id) AS Total_orders,
+	SUM(oi.quantity) AS Total_quantity_sold
+FROM
+	products p
+JOIN
+	order_items oi ON p.product_id = oi.product_id
+GROUP BY 
+	p.product_id,
+	p.name
+ORDER BY
+	Total_quantity_sold DESC;
 
 --  Top 5 Products by Revenue
 SELECT 
@@ -54,6 +69,41 @@ ORDER BY
 	c.region,
 	month;
 
--- Product Return Rate
+-- All customers who have spent more than ₦200,000 in total
+SELECT
+	c.customer_id,
+	c.name,
+	SUM(o.total_amount) AS Total_spent
+FROM
+	customers c
+JOIN
+	orders o ON c.customer_id = o.customer_id
+GROUP BY
+	c.customer_id,
+	c.name
+HAVING SUM(o.total_amount) > 200000
+ORDER BY Total_spent DESC;
+
+--All orders that have been returned
+SELECT 
+    o.order_id,
+    o.order_date,
+    o.total_amount,
+    r.reason,
+    r.amount_refunded
+FROM orders o
+JOIN returns r ON o.order_id = r.order_id
+ORDER BY o.order_date DESC;
+
+CREATE OR REPLACE VIEW v_customer_order_counts AS
+SELECT 
+    c.customer_id,
+    c.name,
+    COUNT(o.order_id) AS total_orders
+FROM Customers c
+JOIN Orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.name;
+SELECT * FROM v_customer_order_counts;
+
 
 	
