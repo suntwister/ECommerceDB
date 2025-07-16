@@ -95,15 +95,15 @@ FROM orders o
 JOIN returns r ON o.order_id = r.order_id
 ORDER BY o.order_date DESC;
 
-CREATE OR REPLACE VIEW v_customer_order_counts AS
+-- Rank customers by spending per region
 SELECT 
-    c.customer_id,
+    c.region,
     c.name,
-    COUNT(o.order_id) AS total_orders
+    SUM(o.total_amount) AS total_spent,
+    RANK() OVER (PARTITION BY c.region ORDER BY SUM(o.total_amount) DESC) AS spending_rank
 FROM Customers c
 JOIN Orders o ON c.customer_id = o.customer_id
-GROUP BY c.customer_id, c.name;
-SELECT * FROM v_customer_order_counts;
+GROUP BY c.region, c.name
+ORDER BY c.region, spending_rank;
 
-
-	
+-- 
